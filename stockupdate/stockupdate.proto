@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "cloudstate/entity_key.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+package stockupdate;
+
+option go_package = "github.com/LunaYin/StockUpdate/stockupdate;stockupdate";
+service StockUpdateService {
+    rpc GetStocks (GetStoreStock) returns (Stocks) {
+        option (google.api.http) = {
+            get: "/stocks/{StoreUid}"
+        };
+    };
+    rpc AggregateStock (AggregateStoreStock) returns (Stocks) {
+        option (google.api.http) = {
+            post: "/stocks/{StoreUid}/aggregate",
+            body: "*",
+        };
+    };
+
+}
+message AggregateStoreStock {
+    string StoreUid = 1 [(.cloudstate.entity_key) = true];
+    WarehouseStock warehouseStock = 2;
+}
+message GetStoreStock {
+    string StoreUid = 1 [(.cloudstate.entity_key) = true];
+}
+
+message WarehouseStock {
+    string WarehouseUid = 1;
+    int32 Quantity = 2;
+}
+message Stocks {
+    repeated WarehouseStock stocks  = 1;
+}
