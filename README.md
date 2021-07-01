@@ -1,5 +1,9 @@
 # StockUpdate
-local run:
+### compile proto files
+```shell
+protoc --go_out=./stockupdate --go_opt=paths=source_relative --go-grpc_out=./stockupdate --go-grpc_opt=paths=source_relative --proto_path=./frontend --proto_path=./stockupdate stockupdate/stockupdate.proto
+```
+### local run:
 ```shell
 source env
 go run cmd/stockupdate.go
