@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/LunaYin/StockUpdate/stockupdate"
+	stockupdate "github.com/LunaYin/StockUpdate"
 	"github.com/cloudstateio/go-support/cloudstate"
 	"github.com/cloudstateio/go-support/cloudstate/crdt"
 	"github.com/cloudstateio/go-support/cloudstate/protocol"
@@ -21,7 +21,7 @@ func main() {
 		ServiceName: "stockupdate.StockUpdateService",
 		EntityFunc:  stockupdate.NewStock,
 	}, protocol.DescriptorConfig{
-		Service: "stockupdate.proto",
+		Service: "service.proto",
 	})
 	if err != nil {
 		log.Fatalf("Cloudstate failed to register entity: %v", err)
