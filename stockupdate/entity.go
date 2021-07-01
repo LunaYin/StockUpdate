@@ -11,7 +11,7 @@ import (
 )
 
 type AllStocks struct {
-	stocks *crdt.ORSet
+	stocks *crdt.ORMap
 }
 
 func NewStock(crdt.EntityID) crdt.EntityHandler {
@@ -58,9 +58,9 @@ func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg pro
 	switch m := msg.(type) {
 	case *GetStoreStock:
 		var stocks Stocks
-		for _, state := range s.stocks.Value() {
+		for _, state := range s.stocks.Entries() {
 			var warehousestock WarehouseStock
-			if err := encoding.UnmarshalAny(state, &warehousestock); err != nil {
+			if err := encoding.UnmarshalAny(state.Value.(*crdt.LWWRegister).Value(), &warehousestock); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal state: %v", err)
 			}
 			stocks.Stocks = append(stocks.Stocks, &warehousestock)
@@ -74,17 +74,35 @@ func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg pro
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal aggregate stock input: %v", err)
 		}
-		s.stocks.Add(addstock)
-		return encoding.MarshalAny(addstock)
+		key := encoding.String(m.WarehouseStock.GetWarehouseUid())
+		reg, err := s.stocks.LWWRegister(key)
+		if err != nil {
+			return nil, err
+		}
+		if reg != nil {
+			reg.Set(addstock)
+		} else {
+			reg = crdt.NewLWWRegister(addstock)
+		}
+		s.stocks.Set(key, reg)
+		var stocks Stocks
+		for _, state := range s.stocks.Entries() {
+			var warehousestock WarehouseStock
+			if err := encoding.UnmarshalAny(state.Value.(*crdt.LWWRegister).Value(), &warehousestock); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal state: %v", err)
+			}
+			stocks.Stocks = append(stocks.Stocks, &warehousestock)
+		}
+		return encoding.MarshalAny(&stocks)
 	}
 	return encoding.Empty, nil
 }
 
 func (s *AllStocks) Default(ctx *crdt.Context) (crdt.CRDT, error) {
-	return crdt.NewORSet(), nil
+	return crdt.NewORMap(), nil
 }
 
 func (s *AllStocks) Set(ctx *crdt.Context, state crdt.CRDT) error {
-	s.stocks = state.(*crdt.ORSet)
+	s.stocks = state.(*crdt.ORMap)
 	return nil
 }
