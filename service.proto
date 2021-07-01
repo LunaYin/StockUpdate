@@ -9,7 +9,8 @@ option go_package = "github.com/LunaYin/StockUpdate/stockupdate;stockupdate";
 
 message AggregateStoreStock {
     string StoreUid = 1 [(.cloudstate.entity_key) = true];
-    WarehouseStock warehouseStock = 2;
+    string WarehouseUid = 2;
+    int32 Quantity = 3;
 }
 message GetStoreStock {
     string StoreUid = 1 [(.cloudstate.entity_key) = true];
@@ -19,6 +20,7 @@ message WarehouseStock {
     string WarehouseUid = 1;
     int32 Quantity = 2;
 }
+
 message Stocks {
     repeated WarehouseStock stocks  = 1;
 }
@@ -35,5 +37,4 @@ service StockUpdateService {
             body: "*",
         };
     };
-
 }

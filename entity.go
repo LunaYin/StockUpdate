@@ -67,14 +67,17 @@ func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg pro
 		}
 		return encoding.MarshalAny(&stocks)
 	case *AggregateStoreStock:
-		if m.GetWarehouseStock().GetQuantity() <= 0 {
+		if m.GetQuantity() <= 0 {
 			return nil, errors.New("can't add negative quantity")
 		}
-		addstock, err := encoding.MarshalAny(m.GetWarehouseStock())
+		addstock, err := encoding.MarshalAny(&WarehouseStock{
+			WarehouseUid: m.GetWarehouseUid(),
+			Quantity:     m.GetQuantity(),
+		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal aggregate stock input: %v", err)
 		}
-		key := encoding.String(m.WarehouseStock.GetWarehouseUid())
+		key := encoding.String(m.GetWarehouseUid())
 		reg, err := s.stocks.LWWRegister(key)
 		if err != nil {
 			return nil, err
