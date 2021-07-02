@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StockUpdateServiceClient interface {
 	GetStocks(ctx context.Context, in *GetStoreStock, opts ...grpc.CallOption) (*Stocks, error)
-	AggregateStock(ctx context.Context, in *AggregateStoreStock, opts ...grpc.CallOption) (*Stocks, error)
+	AggregateStock(ctx context.Context, in *AggregateStoreStock, opts ...grpc.CallOption) (*WarehouseStock, error)
 }
 
 type stockUpdateServiceClient struct {
@@ -39,8 +39,8 @@ func (c *stockUpdateServiceClient) GetStocks(ctx context.Context, in *GetStoreSt
 	return out, nil
 }
 
-func (c *stockUpdateServiceClient) AggregateStock(ctx context.Context, in *AggregateStoreStock, opts ...grpc.CallOption) (*Stocks, error) {
-	out := new(Stocks)
+func (c *stockUpdateServiceClient) AggregateStock(ctx context.Context, in *AggregateStoreStock, opts ...grpc.CallOption) (*WarehouseStock, error) {
+	out := new(WarehouseStock)
 	err := c.cc.Invoke(ctx, "/stockupdate.StockUpdateService/AggregateStock", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (c *stockUpdateServiceClient) AggregateStock(ctx context.Context, in *Aggre
 // for forward compatibility
 type StockUpdateServiceServer interface {
 	GetStocks(context.Context, *GetStoreStock) (*Stocks, error)
-	AggregateStock(context.Context, *AggregateStoreStock) (*Stocks, error)
+	AggregateStock(context.Context, *AggregateStoreStock) (*WarehouseStock, error)
 	mustEmbedUnimplementedStockUpdateServiceServer()
 }
 
@@ -64,7 +64,7 @@ type UnimplementedStockUpdateServiceServer struct {
 func (UnimplementedStockUpdateServiceServer) GetStocks(context.Context, *GetStoreStock) (*Stocks, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStocks not implemented")
 }
-func (UnimplementedStockUpdateServiceServer) AggregateStock(context.Context, *AggregateStoreStock) (*Stocks, error) {
+func (UnimplementedStockUpdateServiceServer) AggregateStock(context.Context, *AggregateStoreStock) (*WarehouseStock, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AggregateStock not implemented")
 }
 func (UnimplementedStockUpdateServiceServer) mustEmbedUnimplementedStockUpdateServiceServer() {}

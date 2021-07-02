@@ -89,14 +89,14 @@ func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg pro
 		}
 		s.stocks.Set(key, reg)
 		var stocks Stocks
+		var warehousestock WarehouseStock
 		for _, state := range s.stocks.Entries() {
-			var warehousestock WarehouseStock
 			if err := encoding.UnmarshalAny(state.Value.(*crdt.LWWRegister).Value(), &warehousestock); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal state: %v", err)
 			}
 			stocks.Stocks = append(stocks.Stocks, &warehousestock)
 		}
-		return encoding.MarshalAny(&stocks)
+		return encoding.MarshalAny(&warehousestock)
 	}
 	return encoding.Empty, nil
 }

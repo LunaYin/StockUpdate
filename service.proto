@@ -31,7 +31,7 @@ service StockUpdateService {
             get: "/stocks/{StoreUid}"
         };
     };
-    rpc AggregateStock (AggregateStoreStock) returns (Stocks) {
+    rpc AggregateStock (AggregateStoreStock) returns (WarehouseStock) {
         option (google.api.http) = {
             post: "/stocks/{StoreUid}/aggregate",
             body: "*",
