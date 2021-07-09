@@ -4,9 +4,9 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . . 
-RUN CGO_ENABLED=0 go build -o main
+RUN CGO_ENABLED=0 go build ./cmd/stockupdate.go
 
 FROM alpine
-COPY --from=build /src/main .
+COPY --from=build /src/stockupdate .
 EXPOSE 8080
-CMD [ "./main" ]
+CMD [ "./stockupdate" ]
