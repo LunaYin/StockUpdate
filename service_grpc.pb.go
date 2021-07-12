@@ -18,8 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StockUpdateServiceClient interface {
-	GetStocks(ctx context.Context, in *GetStoreStock, opts ...grpc.CallOption) (*Stocks, error)
-	AggregateStock(ctx context.Context, in *AggregateStoreStock, opts ...grpc.CallOption) (*WarehouseStock, error)
+	GetStocks(ctx context.Context, in *GetStockLevel, opts ...grpc.CallOption) (*StockLevel, error)
+	AggregateStock(ctx context.Context, in *AggregateStockLevel, opts ...grpc.CallOption) (*AllStockLevels, error)
 }
 
 type stockUpdateServiceClient struct {
@@ -30,8 +30,8 @@ func NewStockUpdateServiceClient(cc grpc.ClientConnInterface) StockUpdateService
 	return &stockUpdateServiceClient{cc}
 }
 
-func (c *stockUpdateServiceClient) GetStocks(ctx context.Context, in *GetStoreStock, opts ...grpc.CallOption) (*Stocks, error) {
-	out := new(Stocks)
+func (c *stockUpdateServiceClient) GetStocks(ctx context.Context, in *GetStockLevel, opts ...grpc.CallOption) (*StockLevel, error) {
+	out := new(StockLevel)
 	err := c.cc.Invoke(ctx, "/stockupdate.StockUpdateService/GetStocks", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -39,8 +39,8 @@ func (c *stockUpdateServiceClient) GetStocks(ctx context.Context, in *GetStoreSt
 	return out, nil
 }
 
-func (c *stockUpdateServiceClient) AggregateStock(ctx context.Context, in *AggregateStoreStock, opts ...grpc.CallOption) (*WarehouseStock, error) {
-	out := new(WarehouseStock)
+func (c *stockUpdateServiceClient) AggregateStock(ctx context.Context, in *AggregateStockLevel, opts ...grpc.CallOption) (*AllStockLevels, error) {
+	out := new(AllStockLevels)
 	err := c.cc.Invoke(ctx, "/stockupdate.StockUpdateService/AggregateStock", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ func (c *stockUpdateServiceClient) AggregateStock(ctx context.Context, in *Aggre
 // All implementations must embed UnimplementedStockUpdateServiceServer
 // for forward compatibility
 type StockUpdateServiceServer interface {
-	GetStocks(context.Context, *GetStoreStock) (*Stocks, error)
-	AggregateStock(context.Context, *AggregateStoreStock) (*WarehouseStock, error)
+	GetStocks(context.Context, *GetStockLevel) (*StockLevel, error)
+	AggregateStock(context.Context, *AggregateStockLevel) (*AllStockLevels, error)
 	mustEmbedUnimplementedStockUpdateServiceServer()
 }
 
@@ -61,10 +61,10 @@ type StockUpdateServiceServer interface {
 type UnimplementedStockUpdateServiceServer struct {
 }
 
-func (UnimplementedStockUpdateServiceServer) GetStocks(context.Context, *GetStoreStock) (*Stocks, error) {
+func (UnimplementedStockUpdateServiceServer) GetStocks(context.Context, *GetStockLevel) (*StockLevel, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStocks not implemented")
 }
-func (UnimplementedStockUpdateServiceServer) AggregateStock(context.Context, *AggregateStoreStock) (*WarehouseStock, error) {
+func (UnimplementedStockUpdateServiceServer) AggregateStock(context.Context, *AggregateStockLevel) (*AllStockLevels, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AggregateStock not implemented")
 }
 func (UnimplementedStockUpdateServiceServer) mustEmbedUnimplementedStockUpdateServiceServer() {}
@@ -81,7 +81,7 @@ func RegisterStockUpdateServiceServer(s grpc.ServiceRegistrar, srv StockUpdateSe
 }
 
 func _StockUpdateService_GetStocks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetStoreStock)
+	in := new(GetStockLevel)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -93,13 +93,13 @@ func _StockUpdateService_GetStocks_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/stockupdate.StockUpdateService/GetStocks",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StockUpdateServiceServer).GetStocks(ctx, req.(*GetStoreStock))
+		return srv.(StockUpdateServiceServer).GetStocks(ctx, req.(*GetStockLevel))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _StockUpdateService_AggregateStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AggregateStoreStock)
+	in := new(AggregateStockLevel)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func _StockUpdateService_AggregateStock_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/stockupdate.StockUpdateService/AggregateStock",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StockUpdateServiceServer).AggregateStock(ctx, req.(*AggregateStoreStock))
+		return srv.(StockUpdateServiceServer).AggregateStock(ctx, req.(*AggregateStockLevel))
 	}
 	return interceptor(ctx, in, info, handler)
 }

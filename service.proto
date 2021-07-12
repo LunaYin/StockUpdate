@@ -7,33 +7,33 @@ package stockupdate;
 
 option go_package = "github.com/LunaYin/StockUpdate/stockupdate;stockupdate";
 
-message AggregateStoreStock {
-    string StoreUid = 1 [(.cloudstate.entity_key) = true];
-    string WarehouseUid = 2;
-    int32 Quantity = 3;
+message AggregateStockLevel {
+    string Action = 1 [(.cloudstate.entity_key) = true];
+    string StoreUid = 2;
+    int32 StockLevel = 3;
 }
-message GetStoreStock {
-    string StoreUid = 1 [(.cloudstate.entity_key) = true];
-}
-
-message WarehouseStock {
-    string WarehouseUid = 1;
-    int32 Quantity = 2;
+message GetStockLevel {
+    string Action = 1 [(.cloudstate.entity_key) = true];
 }
 
-message Stocks {
-    repeated WarehouseStock stocks  = 1;
+message StockLevel {
+    string StoreUid = 1;
+    int32 StockLevel = 2;
+}
+
+message AllStockLevels {
+    repeated StockLevel Allstocklevels  = 1;
 }
 
 service StockUpdateService {
-    rpc GetStocks (GetStoreStock) returns (Stocks) {
+    rpc GetStocks (GetStockLevel) returns (StockLevel) {
         option (google.api.http) = {
-            get: "/stocks/{StoreUid}"
+            get: "/stocks/get"
         };
     };
-    rpc AggregateStock (AggregateStoreStock) returns (WarehouseStock) {
+    rpc AggregateStock (AggregateStockLevel) returns (AllStockLevels) {
         option (google.api.http) = {
-            post: "/stocks/{StoreUid}/aggregate",
+            post: "/stocks/{Action}",
             body: "*",
         };
     };

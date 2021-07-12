@@ -18,66 +18,30 @@ func NewStock(crdt.EntityID) crdt.EntityHandler {
 	return &AllStocks{}
 }
 
-// func (s *AllStocks) getStocks() (*Stocks, error) {
-// 	var stocks Stocks
-// 	for _, state := range s.stocks.Value() {
-// 		var stock WarehouseStock
-// 		if err := encoding.UnmarshalAny(state, &stock); err != nil {
-// 			return nil, fmt.Errorf("_________________failed to decodestruct %v", err)
-// 		}
-// 		stocks.Stocks = append(stocks.Stocks, &stock)
-// 	}
-// 	return stocks, nil
-// }
-// func (s *AllStocks) AggregateStock(storeStock *AggregateStoreStock) (*Stocks, error) {
-// 	if storeStock.GetQuantity() <= 0 {
-// 		return nil, fmt.Errorf("unbale to add negative quantity: %v", storeStock.GetQuantity())
-// 	}
-// 	newstock, err := encoding.MarshalAny(&WarehouseStock{
-// 		WarehouseUid: storeStock.GetWarehouseUid(),
-// 		Quantity:     storeStock.GetQuantity(),
-// 	})
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to marshal newstock: %v", err)
-// 	}
-// 	key := encoding.String(storeStock.GetWarehouseUid())
-// 	reg, err := s.stocks.LWWRegister(key)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to register key: %v", err)
-// 	}
-// 	if reg != nil {
-// 		reg.Set(newstock)
-// 	} else {
-// 		reg = crdt.NewLWWRegister(newstock)
-// 	}
-// 	s.stocks.Set(key, reg)
-// 	return s.getStocks()
-// }
-
 func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg proto.Message) (*any.Any, error) {
 	switch m := msg.(type) {
-	case *GetStoreStock:
-		var stocks Stocks
+	case *GetStockLevel:
+		stocks := &AllStockLevels{}
 		for _, state := range s.stocks.Entries() {
-			var warehousestock WarehouseStock
-			if err := encoding.UnmarshalAny(state.Value.(*crdt.LWWRegister).Value(), &warehousestock); err != nil {
+			var stocklevel StockLevel
+			if err := encoding.UnmarshalAny(state.Value.(*crdt.LWWRegister).Value(), &stocklevel); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal state: %v", err)
 			}
-			stocks.Stocks = append(stocks.Stocks, &warehousestock)
+			stocks.Allstocklevels = append(stocks.Allstocklevels, &stocklevel)
 		}
 		return encoding.MarshalAny(&stocks)
-	case *AggregateStoreStock:
-		if m.GetQuantity() <= 0 {
+	case *AggregateStockLevel:
+		if m.GetStockLevel() <= 0 {
 			return nil, errors.New("can't add negative quantity")
 		}
-		addstock, err := encoding.MarshalAny(&WarehouseStock{
-			WarehouseUid: m.GetWarehouseUid(),
-			Quantity:     m.GetQuantity(),
+		addstock, err := encoding.MarshalAny(&StockLevel{
+			StoreUid:   m.GetStoreUid(),
+			StockLevel: m.GetStockLevel(),
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal aggregate stock input: %v", err)
 		}
-		key := encoding.String(m.GetWarehouseUid())
+		key := encoding.String(m.GetStoreUid())
 		reg, err := s.stocks.LWWRegister(key)
 		if err != nil {
 			return nil, err
@@ -88,15 +52,15 @@ func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg pro
 			reg = crdt.NewLWWRegister(addstock)
 		}
 		s.stocks.Set(key, reg)
-		var stocks Stocks
-		var warehousestock WarehouseStock
+		stocks := &AllStockLevels{}
 		for _, state := range s.stocks.Entries() {
-			if err := encoding.UnmarshalAny(state.Value.(*crdt.LWWRegister).Value(), &warehousestock); err != nil {
+			var stocklevel StockLevel
+			if err := encoding.UnmarshalAny(state.Value.(*crdt.LWWRegister).Value(), &stocklevel); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal state: %v", err)
 			}
-			stocks.Stocks = append(stocks.Stocks, &warehousestock)
+			stocks.Allstocklevels = append(stocks.Allstocklevels, &stocklevel)
 		}
-		return encoding.MarshalAny(&warehousestock)
+		return encoding.MarshalAny(stocks)
 	}
 	return encoding.Empty, nil
 }
