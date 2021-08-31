@@ -11,7 +11,7 @@ option go_package = "github.com/LunaYin/StockUpdate/stockupdate;stockupdate";
 message AggregateStockLevel {
     string Action = 1 [(.cloudstate.entity_key) = true];
     string StoreUid = 2;
-    int32 StockLevel = 3;
+    int32 Quantity = 3;
 }
 message GetStockLevel {
     string Action = 1 [(.cloudstate.entity_key) = true];

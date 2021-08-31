@@ -59,12 +59,12 @@ func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg pro
 		}
 		return encoding.MarshalAny(&orderinfo)
 	case *AggregateStockLevel:
-		if m.GetStockLevel() <= 0 {
+		if m.GetQuantity() <= 0 {
 			return nil, errors.New("can't add negative quantity")
 		}
 		addstock, err := encoding.MarshalAny(&StockLevel{
 			StoreUid:   m.GetStoreUid(),
-			StockLevel: m.GetStockLevel(),
+			StockLevel: m.GetQuantity() / 2,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal aggregate stock input: %v", err)
