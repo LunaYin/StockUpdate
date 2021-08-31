@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type StockUpdateServiceClient interface {
 	GetStocks(ctx context.Context, in *GetStockLevel, opts ...grpc.CallOption) (*StockLevel, error)
 	AggregateStock(ctx context.Context, in *AggregateStockLevel, opts ...grpc.CallOption) (*AllStockLevels, error)
+	OnOrderCreated(ctx context.Context, in *AddOrderInfo, opts ...grpc.CallOption) (*OrderInfo, error)
 }
 
 type stockUpdateServiceClient struct {
@@ -48,12 +49,22 @@ func (c *stockUpdateServiceClient) AggregateStock(ctx context.Context, in *Aggre
 	return out, nil
 }
 
+func (c *stockUpdateServiceClient) OnOrderCreated(ctx context.Context, in *AddOrderInfo, opts ...grpc.CallOption) (*OrderInfo, error) {
+	out := new(OrderInfo)
+	err := c.cc.Invoke(ctx, "/stockupdate.StockUpdateService/OnOrderCreated", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StockUpdateServiceServer is the server API for StockUpdateService service.
 // All implementations must embed UnimplementedStockUpdateServiceServer
 // for forward compatibility
 type StockUpdateServiceServer interface {
 	GetStocks(context.Context, *GetStockLevel) (*StockLevel, error)
 	AggregateStock(context.Context, *AggregateStockLevel) (*AllStockLevels, error)
+	OnOrderCreated(context.Context, *AddOrderInfo) (*OrderInfo, error)
 	mustEmbedUnimplementedStockUpdateServiceServer()
 }
 
@@ -66,6 +77,9 @@ func (UnimplementedStockUpdateServiceServer) GetStocks(context.Context, *GetStoc
 }
 func (UnimplementedStockUpdateServiceServer) AggregateStock(context.Context, *AggregateStockLevel) (*AllStockLevels, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AggregateStock not implemented")
+}
+func (UnimplementedStockUpdateServiceServer) OnOrderCreated(context.Context, *AddOrderInfo) (*OrderInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OnOrderCreated not implemented")
 }
 func (UnimplementedStockUpdateServiceServer) mustEmbedUnimplementedStockUpdateServiceServer() {}
 
@@ -116,6 +130,24 @@ func _StockUpdateService_AggregateStock_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StockUpdateService_OnOrderCreated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddOrderInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockUpdateServiceServer).OnOrderCreated(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/stockupdate.StockUpdateService/OnOrderCreated",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockUpdateServiceServer).OnOrderCreated(ctx, req.(*AddOrderInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StockUpdateService_ServiceDesc is the grpc.ServiceDesc for StockUpdateService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,6 +162,10 @@ var StockUpdateService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AggregateStock",
 			Handler:    _StockUpdateService_AggregateStock_Handler,
+		},
+		{
+			MethodName: "OnOrderCreated",
+			Handler:    _StockUpdateService_OnOrderCreated_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

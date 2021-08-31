@@ -3,6 +3,7 @@ syntax = "proto3";
 import "cloudstate/entity_key.proto";
 import "google/api/annotations.proto";
 
+
 package stockupdate;
 
 option go_package = "github.com/LunaYin/StockUpdate/stockupdate;stockupdate";
@@ -15,7 +16,18 @@ message AggregateStockLevel {
 message GetStockLevel {
     string Action = 1 [(.cloudstate.entity_key) = true];
 }
-
+message AddOrderInfo {
+    string OrderId = 1 [(.cloudstate.entity_key) = true];
+    string UserId = 2;
+    string ItemId = 3;
+}
+message OrderInfo {
+    string UserId = 1;
+    string ItemId = 2;
+}
+message AllOrderInfo {
+    repeated OrderInfo AllorderInfo = 1;
+}
 message StockLevel {
     string StoreUid = 1;
     int32 StockLevel = 2;
@@ -24,16 +36,24 @@ message StockLevel {
 message AllStockLevels {
     repeated StockLevel Allstocklevels  = 1;
 }
-
+ 
 service StockUpdateService {
     rpc GetStocks (GetStockLevel) returns (StockLevel) {
         option (google.api.http) = {
             get: "/stocks/get"
         };
     };
+    
     rpc AggregateStock (AggregateStockLevel) returns (AllStockLevels) {
         option (google.api.http) = {
             post: "/stocks/{Action}",
+            body: "*",
+        };
+    };
+
+    rpc OnOrderCreated (AddOrderInfo) returns (OrderInfo) {
+        option (google.api.http) = {
+            post: "/order/{OrderId}",
             body: "*",
         };
     };

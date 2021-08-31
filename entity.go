@@ -30,6 +30,34 @@ func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg pro
 			stocks.Allstocklevels = append(stocks.Allstocklevels, &stocklevel)
 		}
 		return encoding.MarshalAny(&stocks)
+	case *AddOrderInfo:
+		addorder, err := encoding.MarshalAny(&OrderInfo{
+			UserId: m.GetUserId(),
+			ItemId: m.GetItemId(),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal add order info: %v", err)
+		}
+		key := encoding.String(m.GetUserId())
+		reg, err := s.stocks.LWWRegister(key)
+		if err != nil {
+			return nil, err
+		}
+		if reg != nil {
+			reg.Set(addorder)
+		} else {
+			reg = crdt.NewLWWRegister(addorder)
+		}
+		s.stocks.Set(key, reg)
+		orderinfos := &AllOrderInfo{}
+		var orderinfo OrderInfo
+		for _, state := range s.stocks.Entries() {
+			if err := encoding.UnmarshalAny(state.Value.(*crdt.LWWRegister).Value(), &orderinfo); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal state: %v", err)
+			}
+			orderinfos.AllorderInfo = append(orderinfos.AllorderInfo, &orderinfo)
+		}
+		return encoding.MarshalAny(&orderinfo)
 	case *AggregateStockLevel:
 		if m.GetStockLevel() <= 0 {
 			return nil, errors.New("can't add negative quantity")
