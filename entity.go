@@ -3,6 +3,7 @@ package stockupdate
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/cloudstateio/go-support/cloudstate/crdt"
 	"github.com/cloudstateio/go-support/cloudstate/encoding"
@@ -57,6 +58,7 @@ func (s *AllStocks) HandleCommand(ctx *crdt.CommandContext, name string, msg pro
 			}
 			orderinfos.AllorderInfo = append(orderinfos.AllorderInfo, &orderinfo)
 		}
+		log.Printf("orderinfo: %v", &orderinfo)
 		return encoding.MarshalAny(&orderinfo)
 	case *AggregateStockLevel:
 		if m.GetQuantity() <= 0 {
